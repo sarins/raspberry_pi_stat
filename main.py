@@ -24,7 +24,7 @@ lcd = character_lcd.Character_LCD_Mono(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6,
 
 
 def lcd_msg(l1, l2, pause=2, move_speed=0.4):
-    lcd.home()
+    lcd.clear()
     lcd.message = l1 + "\n" + l2
     time.sleep(pause)
     l2_len = len(l2)
@@ -47,23 +47,18 @@ CPU_F = "Freq[{}]:{: >5s}Ghz"
 CPU_C = "Cores:{: >10s}"
 CPU_L = "Load:{: >11s}"
 #MEM
-VM_TITLE = TITLE.format("VM STAT")
-SM_TITLE = TITLE.format("SM STAT")
+VM_TITLE = TITLE.format("Memory")
+SM_TITLE = TITLE.format("Swap")
 MEM_F_PREFIX = "{}:{:>"
 MEM_F_SUFFIX = "s}"
 #FS
-FS_TITLE = TITLE.format("FS STAT")
-FS_PI_FIELD = "D:{:>6s}|T:{:>5s}"
-FS_PU_FIELD = "A:{:>6s}|U:{:>5s}"
+FS_T_FIELD = "FS type: {:>s}"
+FS_PU_FIELD = "Size: {:>s}, Used: {:>s}"
 #I/O counter
-IO_TITLE = TITLE.format("IO STAT")
-IO_L_FIELD = "DISK:{:>11s}"
-IO_CI_FIELD = "I:{:>6s}|S{:>6s}"
-IO_CO_FIELD = "O:{:>6s}|S{:>6s}"
+IO_CI_FIELD = "Input: {:>s}, Elapsed: {:>s}s"
+IO_CO_FIELD = "Output: {:>s}, Elapsed: {:>s}s"
 # NET
-NET_TITLE = TITLE.format("NET STAT")
-NET_L_FIELD = "NET:{:>12s}"
-NET_ADDR_FIELD = "ADDR:{:>11s}"
+NET_ADDR_FIELD = "Addr: {:>s}"
 
 while True:
     lcd.backlight = True
@@ -104,13 +99,12 @@ while True:
     for p in psutil.disk_partitions(all=False):
         dev = p.device.replace("/dev/", "")
         ld = len(dev)
-        dev = dev if (ld < 6) else "*" + dev[ld - 5:ld]
-        lt = len(p.fstype)
-        fst = p.fstype if (lt < 5) else "*" + p.fstype[lt - 4:lt]
-        lcd_msg(FS_TITLE, FS_PI_FIELD.format(dev, fst))
+        dev = dev if (ld < 8) else "*" + dev[ld - 7:ld]
+        dev_title = TITLE.format(dev)
+        lcd_msg(dev_title, FS_T_FIELD.format(p.fstype))
         usage = psutil.disk_usage(p.mountpoint)
         lcd_msg(
-            FS_TITLE,
+            dev_title,
             FS_PU_FIELD.format(psutil._common.bytes2human(usage.total),
                                "{:.0f}%".format(usage.percent)))
     #I/O counter
@@ -118,28 +112,31 @@ while True:
     for c in ioc:
         if (c.startswith("ram") | c.startswith("loop")):
             continue
-        lcd_msg(IO_TITLE, IO_L_FIELD.format(c))
+        lc = len(c)
+        dev = c if (lc < 8) else "*" + c[lc - 7:lc]
+        dev_title = TITLE.format(dev)
         lcd_msg(
-            IO_TITLE,
+            dev_title,
             IO_CI_FIELD.format(
                 psutil._common.bytes2human(ioc[c].read_bytes),
-                psutil._common.bytes2human(ioc[c].read_time / 1000).replace(
-                    ".0B", "")))
+                str(ioc[c].read_time / 1000)))
         lcd_msg(
-            IO_TITLE,
+            dev_title,
             IO_CO_FIELD.format(
                 psutil._common.bytes2human(ioc[c].write_bytes),
-                psutil._common.bytes2human(ioc[c].write_time / 1000).replace(
-                    ".0B", "")))
+                str(ioc[c].write_time / 1000)))
     #NET
     net_addrs = psutil.net_if_addrs()
     for nname in net_addrs:
         if nname == "lo":
             continue
-        lcd_msg(NET_TITLE, NET_L_FIELD.format(nname))
+        ln = len(nname)
+        nn = nname if (ln < 8) else "*" + nname[ln - 7:ln]
+        nn_title = TITLE.format(nn)
         for addr in net_addrs[nname]:
             addr_msg = NET_ADDR_FIELD.format(addr.address)
-            lcd_msg(NET_TITLE, addr_msg)
+            lcd_msg(nn_title, addr_msg)
     # down
+    lcd.clear()
     lcd.backlight = False
     time.sleep(10)
