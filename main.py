@@ -116,6 +116,8 @@ while True:
     #I/O counter
     ioc = psutil.disk_io_counters(perdisk=True)
     for c in ioc:
+        if (c.startswith("ram") | c.startswith("loop")):
+            continue
         lcd_msg(IO_TITLE, IO_L_FIELD.format(c))
         lcd_msg(
             IO_TITLE,
