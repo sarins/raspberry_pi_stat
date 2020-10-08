@@ -117,14 +117,12 @@ while True:
         dev_title = TITLE.format(dev)
         lcd_msg(
             dev_title,
-            IO_CI_FIELD.format(
-                psutil._common.bytes2human(ioc[c].read_bytes),
-                str(ioc[c].read_time / 1000)))
+            IO_CI_FIELD.format(psutil._common.bytes2human(ioc[c].read_bytes),
+                               str(ioc[c].read_time / 1000)))
         lcd_msg(
             dev_title,
-            IO_CO_FIELD.format(
-                psutil._common.bytes2human(ioc[c].write_bytes),
-                str(ioc[c].write_time / 1000)))
+            IO_CO_FIELD.format(psutil._common.bytes2human(ioc[c].write_bytes),
+                               str(ioc[c].write_time / 1000)))
     #NET
     net_addrs = psutil.net_if_addrs()
     for nname in net_addrs:
