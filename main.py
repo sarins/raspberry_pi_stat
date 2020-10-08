@@ -31,6 +31,7 @@ def lcd_msg(l1, l2, pause=2, move_speed=0.4):
     if (l2_len > 16):
         while (l2_len - 16) > 0:
             l2 = l2[1:]
+            l2_len = len(l2)
             lcd.message = l1 + "\n" + l2
             time.sleep(move_speed)
         time.sleep(pause - move_speed)
